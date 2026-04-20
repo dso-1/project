@@ -11,7 +11,8 @@ pipeline {
         IMAGE_NAME     = "${JOB_NAME}"
         IMAGE_TAG      = "${BUILD_NUMBER}"
         IMAGE_PREV_TAG = "${BUILD_NUMBER.toInteger() - 1}"
-        CONTAINER_NAME = "${JOB_NAME}-app"
+        // CONTAINER_NAME = "${JOB_NAME}-app"
+        CONTAINER_NAME = "${JOB_NAME.split('/').last()}-app"
         APP_PORT       = "8081"   // Ganti per kelompok: 8081 / 8082 / 8083 / 8084
     }
 
