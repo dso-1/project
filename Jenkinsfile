@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         VM_HOST = "10.34.100.178"
-        VM_USER = "your-username"
+        VM_USER = "deploy"
         APP_PORT = "8081"
         APP_NAME = "kelompok1_app"
         DB_NAME  = "kelompok1_db"
