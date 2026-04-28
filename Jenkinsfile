@@ -1,70 +1,84 @@
 pipeline {
     agent any
 
-    // Mencegah build yang sama berjalan dua kali di job yang sama
-    // (tidak mempengaruhi job kelompok lain — mereka tetap bisa jalan bersamaan)
-    options {
-        disableConcurrentBuilds()
-    }
-
     environment {
-        IMAGE_NAME     = "${JOB_NAME}"
-        IMAGE_TAG      = "${BUILD_NUMBER}"
-        IMAGE_PREV_TAG = "${BUILD_NUMBER.toInteger() - 1}"
-        // CONTAINER_NAME = "${JOB_NAME}-app"
-        CONTAINER_NAME = "${JOB_NAME.split('/').last()}-app"
-        APP_PORT       = "8081"   // Ganti per kelompok: 8081 / 8082 / 8083 / 8084
+        VM_HOST = "10.34.100.178"
+        VM_USER = "your-username"
+        APP_PORT = "8081"
+        APP_NAME = "kelompok1_app"
+        DB_NAME  = "kelompok1_db"
+        IMAGE_NAME = "kelompok1_image"
+        IMAGE_TAG  = "${BUILD_NUMBER}"
     }
 
     stages {
         stage('Clone') {
             steps {
-                // Otomatis clone dari SCM yang dikonfigurasi — tidak perlu hardcode URL
                 checkout scm
             }
         }
 
-        stage('Build') {
+        stage('Build Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} app"
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh "docker run --rm ${IMAGE_NAME}:${IMAGE_TAG} python -m pytest tests/ -v"
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh "docker stop ${CONTAINER_NAME} || true"
-                sh "docker rm   ${CONTAINER_NAME} || true"
-                sh "docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:5000 ${IMAGE_NAME}:${IMAGE_TAG}"
-            }
-        }
-
-        stage('Cleanup') {
-            steps {
-                // Hanya hapus image LAMA milik job ini — tidak menyentuh image kelompok lain
-                // yang mungkin sedang berjalan bersamaan
-                script {
-                    def prevTag = BUILD_NUMBER.toInteger() - 1
-                    sh "docker rmi ${IMAGE_NAME}:${prevTag} || true"
+                dir('app-web') {
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                 }
+            }
+        }
+
+        stage('Deploy to VM') {
+            steps {
+                sh """
+                docker save ${IMAGE_NAME}:${IMAGE_TAG} | gzip > image.tar.gz
+                scp image.tar.gz ${VM_USER}@${VM_HOST}:/tmp/
+
+                ssh ${VM_USER}@${VM_HOST} '
+                    docker load < /tmp/image.tar.gz
+
+                    docker stop ${APP_NAME} || true
+                    docker rm ${APP_NAME} || true
+                    docker stop ${DB_NAME} || true
+                    docker rm ${DB_NAME} || true
+
+                    docker run -d \
+                      --name ${DB_NAME} \
+                      -e POSTGRES_USER=goreserve \
+                      -e POSTGRES_PASSWORD=goreserve \
+                      -e POSTGRES_DB=go_reserve \
+                      -p 5432:5432 \
+                      postgres:15
+
+                    sleep 5
+
+                    docker run -d \
+                      --name ${APP_NAME} \
+                      --link ${DB_NAME}:db \
+                      -e DATABASE_URL=postgresql://goreserve:goreserve@db:5432/go_reserve \
+                      -p ${APP_PORT}:3000 \
+                      ${IMAGE_NAME}:${IMAGE_TAG}
+
+                    sleep 5
+
+                    docker exec ${APP_NAME} bunx prisma db push
+                    docker exec ${APP_NAME} bun run db:seed
+                '
+                """
+            }
+        }
+
+        stage('Verify') {
+            steps {
+                sh "curl -f http://${VM_HOST}:${APP_PORT} || exit 1"
             }
         }
     }
 
     post {
         success {
-            echo "✅ Deploy ${JOB_NAME} build #${BUILD_NUMBER} berhasil! Akses di port ${APP_PORT}"
+            echo "✅ Deploy sukses di http://${VM_HOST}:${APP_PORT}"
         }
         failure {
-            echo "❌ Build ${JOB_NAME} #${BUILD_NUMBER} gagal. Periksa log di atas."
-            // Pastikan container lama tidak tertinggal jika deploy gagal di tengah jalan
-            sh "docker stop ${CONTAINER_NAME} || true"
-            sh "docker rm   ${CONTAINER_NAME} || true"
+            echo "❌ Deploy gagal"
         }
     }
 }

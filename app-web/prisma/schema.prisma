@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MAHASISWA
+}
+
+enum RoomStatus {
+  AVAILABLE
+  MAINTENANCE
+  UNAVAILABLE
+}
+
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  password     String
+  name         String
+  nim          String?       @unique
+  role         Role          @default(MAHASISWA)
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("users")
+}
+
+model Room {
+  id           String        @id @default(cuid())
+  name         String
+  capacity     Int
+  facilities   String[]
+  image        String?
+  description  String?
+  location     String?
+  status       RoomStatus    @default(AVAILABLE)
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("rooms")
+}
+
+model Reservation {
+  id        String            @id @default(cuid())
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  room      Room              @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  roomId    String
+  startTime DateTime
+  endTime   DateTime
+  status    ReservationStatus @default(PENDING)
+  purpose   String
+  notes     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([roomId])
+  @@index([startTime, endTime])
+  @@map("reservations")
+}
