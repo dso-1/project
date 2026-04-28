@@ -4,6 +4,16 @@ import { Badge } from '@/shadcn/badge';
 import { Button } from '@/shadcn/button';
 import { Card, CardContent } from '@/shadcn/card';
 import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/shadcn/alert-dialog';
+import {
 	CalendarIcon,
 	ClockIcon,
 	DoorOpenIcon,
@@ -51,10 +61,11 @@ const statusConfig = {
 };
 
 export function StudentHistoryPage({ reservations }: StudentHistoryPageProps) {
-	const { filter, setFilter, filteredBookings, handleCancel } =
+	const { filter, setFilter, filteredBookings, cancelTarget, requestCancel, confirmCancel, dismissCancel } =
 		useStudentHistory(reservations);
 
 	return (
+		<>
 		<div className="space-y-6">
 			<motion.div
 				initial={{ opacity: 0, y: -20 }}
@@ -231,7 +242,7 @@ export function StudentHistoryPage({ reservations }: StudentHistoryPageProps) {
 													size="sm"
 													variant="outline"
 													className="text-red-600"
-													onClick={() => handleCancel(booking.id)}
+													onClick={() => requestCancel(booking.id)}
 												>
 													Cancel
 												</Button>
@@ -259,5 +270,28 @@ export function StudentHistoryPage({ reservations }: StudentHistoryPageProps) {
 				)}
 			</motion.div>
 		</div>
+
+		{/* Cancel Confirmation Dialog */}
+		<AlertDialog open={!!cancelTarget} onOpenChange={(open) => { if (!open) dismissCancel(); }}>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Cancel Booking</AlertDialogTitle>
+					<AlertDialogDescription>
+						Are you sure you want to cancel this booking? This action cannot
+						be undone.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel onClick={dismissCancel}>Keep Booking</AlertDialogCancel>
+					<AlertDialogAction
+						onClick={() => confirmCancel((id) => console.log('Cancel booking:', id))}
+						variant="destructive"
+					>
+						Cancel Booking
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+		</>
 	);
 }

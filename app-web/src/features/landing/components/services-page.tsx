@@ -148,11 +148,21 @@ export function ServicesPage({ rooms, stats }: ServicesPageProps) {
 								viewport={{ once: true }}
 								transition={{ delay: index * 0.05 }}
 								whileHover={{ y: -5 }}
-								className="overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-lg"
+								className="group overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-lg"
 							>
-								<div className="flex h-32 items-center justify-center bg-linear-to-br from-primary/20 to-primary/5">
-									<DoorOpenIcon className="h-12 w-12 text-primary/50" />
-								</div>
+								{room.image ? (
+									<div className="h-32 w-full overflow-hidden">
+										<img
+											src={room.image}
+											alt={room.name}
+											className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+										/>
+									</div>
+								) : (
+									<div className="flex h-32 items-center justify-center bg-linear-to-br from-primary/20 to-primary/5">
+										<DoorOpenIcon className="h-12 w-12 text-primary/50" />
+									</div>
+								)}
 
 								<div className="p-4">
 									<div className="flex items-start justify-between">

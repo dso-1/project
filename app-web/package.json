@@ -20,6 +20,7 @@
 		"seed": "bun run prisma/seed.ts"
 	},
 	"dependencies": {
+		"@aws-sdk/client-s3": "^3.1038.0",
 		"@base-ui/react": "^1.0.0",
 		"@fontsource-variable/nunito-sans": "^5.2.7",
 		"@prisma/adapter-pg": "^7.2.0",

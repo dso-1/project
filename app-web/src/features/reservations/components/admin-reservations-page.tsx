@@ -4,6 +4,16 @@ import { Button } from '@/shadcn/button';
 import { Badge } from '@/shadcn/badge';
 import { Card, CardContent } from '@/shadcn/card';
 import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/shadcn/alert-dialog';
+import {
 	CheckIcon,
 	XIcon,
 	ClockIcon,
@@ -84,10 +94,14 @@ export function AdminReservationsPage({
 		loadingId,
 		filteredReservations,
 		handleApprove,
-		handleReject,
+		rejectTarget,
+		requestReject,
+		confirmReject,
+		cancelReject,
 	} = useAdminReservations(initialReservations, initialStats);
 
 	return (
+		<>
 		<div className="space-y-6">
 			<motion.div
 				initial={{ opacity: 0, y: -20 }}
@@ -251,7 +265,7 @@ export function AdminReservationsPage({
 														size="sm"
 														variant="outline"
 														className="text-red-600 hover:bg-red-50 hover:text-red-700"
-														onClick={() => handleReject(reservation.id)}
+														onClick={() => requestReject(reservation.id)}
 														disabled={isLoading}
 													>
 														{isLoading ? (
@@ -300,5 +314,25 @@ export function AdminReservationsPage({
 				)}
 			</motion.div>
 		</div>
+
+		{/* Reject Confirmation Dialog */}
+		<AlertDialog open={!!rejectTarget} onOpenChange={(open) => { if (!open) cancelReject(); }}>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Reject Reservation</AlertDialogTitle>
+					<AlertDialogDescription>
+						Are you sure you want to reject this reservation? The student will
+						be notified of the rejection.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel onClick={cancelReject}>Cancel</AlertDialogCancel>
+					<AlertDialogAction onClick={confirmReject} variant="destructive">
+						Reject
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+	</>
 	);
 }

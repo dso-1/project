@@ -13,22 +13,34 @@ interface Reservation {
 
 export function useStudentHistory(reservations: Reservation[]) {
 	const [filter, setFilter] = React.useState('ALL');
+	const [cancelTarget, setCancelTarget] = React.useState<string | null>(null);
 
 	const filteredBookings = reservations.filter((booking) => {
 		return filter === 'ALL' || booking.status === filter;
 	});
 
-	const handleCancel = (id: string) => {
-		if (confirm('Are you sure you want to cancel this booking?')) {
-			console.log('Cancelling booking:', id);
-			// Ideally impl cancel logic here or pass handler
+	const requestCancel = (id: string) => {
+		setCancelTarget(id);
+	};
+
+	const confirmCancel = (onCancel: (id: string) => void) => {
+		if (cancelTarget) {
+			onCancel(cancelTarget);
+			setCancelTarget(null);
 		}
+	};
+
+	const dismissCancel = () => {
+		setCancelTarget(null);
 	};
 
 	return {
 		filter,
 		setFilter,
 		filteredBookings,
-		handleCancel,
+		cancelTarget,
+		requestCancel,
+		confirmCancel,
+		dismissCancel,
 	};
 }

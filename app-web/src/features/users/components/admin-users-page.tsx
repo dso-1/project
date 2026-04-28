@@ -11,6 +11,16 @@ import {
 	CardTitle,
 } from '@/shadcn/card';
 import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/shadcn/alert-dialog';
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
@@ -58,10 +68,14 @@ export function AdminUsersPage({
 		loadingId,
 		filteredUsers,
 		handleRoleChange,
-		handleDelete,
+		deleteTarget,
+		requestDelete,
+		confirmDelete,
+		cancelDelete,
 	} = useAdminUsers(initialUsers, initialStats);
 
 	return (
+		<>
 		<div className="space-y-6">
 			<motion.div
 				initial={{ opacity: 0, y: -20 }}
@@ -280,7 +294,7 @@ export function AdminUsersPage({
 																</DropdownMenuItem>
 																<DropdownMenuItem
 																	onClick={() =>
-																		handleDelete(user.id, user.name)
+																		requestDelete(user.id, user.name)
 																	}
 																	className="text-red-600"
 																>
@@ -308,5 +322,26 @@ export function AdminUsersPage({
 				</Card>
 			</motion.div>
 		</div>
+
+		{/* Delete Confirmation Dialog */}
+		<AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) cancelDelete(); }}>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Delete User</AlertDialogTitle>
+					<AlertDialogDescription>
+						Are you sure you want to delete{' '}
+						<strong>{deleteTarget?.name}</strong>? This will also permanently
+						delete all their reservations and cannot be undone.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel onClick={cancelDelete}>Cancel</AlertDialogCancel>
+					<AlertDialogAction onClick={confirmDelete} variant="destructive">
+						Delete User
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+		</>
 	);
 }

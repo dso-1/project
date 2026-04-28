@@ -11,12 +11,23 @@ import {
 	CardTitle,
 } from '@/shadcn/card';
 import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/shadcn/alert-dialog';
+import {
 	TrashIcon,
 	UsersIcon,
 	SearchIcon,
 	DoorOpenIcon,
 	PlusIcon,
 	PencilIcon,
+	Loader2Icon,
 } from 'lucide-react';
 import { Input } from '@/shadcn/input';
 import { useAdminRooms } from '../hooks/use-admin-rooms'; // Import hook
@@ -43,7 +54,11 @@ export function AdminRoomsPage() {
 		statusFilter,
 		setStatusFilter,
 		filteredRooms,
-		handleDelete,
+		deleteTarget,
+		requestDelete,
+		confirmDelete,
+		cancelDelete,
+		isDeleting,
 	} = useAdminRooms();
 
 	return (
@@ -148,9 +163,19 @@ export function AdminRoomsPage() {
 											>
 												<td className="py-4">
 													<div className="flex items-center gap-3">
-														<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-linear-to-br from-primary/20 to-primary/5">
-															<DoorOpenIcon className="h-5 w-5 text-primary" />
-														</div>
+														{room.image ? (
+															<div className="h-12 w-12 overflow-hidden rounded-lg">
+																<img
+																	src={room.image}
+																	alt={room.name}
+																	className="h-full w-full object-cover"
+																/>
+															</div>
+														) : (
+															<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-linear-to-br from-primary/20 to-primary/5">
+																<DoorOpenIcon className="h-5 w-5 text-primary" />
+															</div>
+														)}
 														<div>
 															<p className="font-medium">{room.name}</p>
 															<p className="text-xs text-muted-foreground">
@@ -205,7 +230,7 @@ export function AdminRoomsPage() {
 															variant="ghost"
 															size="icon"
 															className="text-destructive hover:text-destructive"
-															onClick={() => handleDelete(room.id)}
+															onClick={() => requestDelete(room.id)}
 														>
 															<TrashIcon className="h-4 w-4" />
 														</Button>
@@ -230,6 +255,35 @@ export function AdminRoomsPage() {
 					</CardContent>
 				</Card>
 			</motion.div>
+
+			{/* Delete Confirmation Dialog */}
+			<AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) cancelDelete(); }}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete Room</AlertDialogTitle>
+						<AlertDialogDescription>
+							Are you sure you want to delete this room? This action cannot be
+							undone and will also remove all associated reservations.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel onClick={cancelDelete}>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={confirmDelete}
+							variant="destructive"
+						>
+							{isDeleting ? (
+								<>
+									<Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+									Deleting...
+								</>
+							) : (
+								'Delete'
+							)}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

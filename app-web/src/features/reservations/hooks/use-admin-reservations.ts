@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { updateReservationStatusFn } from '@/features/reservations/api/reservations.api';
+import { toast } from 'sonner';
 
 interface Reservation {
 	id: string;
@@ -26,6 +27,7 @@ export function useAdminReservations(
 	const [stats, setStats] = React.useState(initialStats);
 	const [statusFilter, setStatusFilter] = React.useState<string>('ALL');
 	const [loadingId, setLoadingId] = React.useState<string | null>(null);
+	const [rejectTarget, setRejectTarget] = React.useState<string | null>(null);
 
 	const filteredReservations = reservations.filter((res) => {
 		return statusFilter === 'ALL' || res.status === statusFilter;
@@ -44,16 +46,23 @@ export function useAdminReservations(
 				pending: prev.pending - 1,
 				approved: prev.approved + 1,
 			}));
+			toast.success('Reservation approved successfully');
 		} catch (err) {
 			console.error('Approve error:', err);
+			toast.error('Failed to approve reservation');
 		} finally {
 			setLoadingId(null);
 		}
 	};
 
-	const handleReject = async (id: string) => {
-		if (!confirm('Are you sure you want to reject this reservation?')) return;
+	const requestReject = (id: string) => {
+		setRejectTarget(id);
+	};
 
+	const confirmReject = async () => {
+		if (!rejectTarget) return;
+		const id = rejectTarget;
+		setRejectTarget(null);
 		setLoadingId(id);
 		try {
 			await updateReservationStatusFn({ data: { id, status: 'REJECTED' } });
@@ -66,11 +75,17 @@ export function useAdminReservations(
 				pending: prev.pending - 1,
 				rejected: prev.rejected + 1,
 			}));
+			toast.success('Reservation rejected');
 		} catch (err) {
 			console.error('Reject error:', err);
+			toast.error('Failed to reject reservation');
 		} finally {
 			setLoadingId(null);
 		}
+	};
+
+	const cancelReject = () => {
+		setRejectTarget(null);
 	};
 
 	return {
@@ -81,6 +96,9 @@ export function useAdminReservations(
 		loadingId,
 		filteredReservations,
 		handleApprove,
-		handleReject,
+		rejectTarget,
+		requestReject,
+		confirmReject,
+		cancelReject,
 	};
 }

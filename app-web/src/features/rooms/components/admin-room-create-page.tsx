@@ -1,5 +1,5 @@
 import type * as React from 'react';
-import { useNavigate, Link } from '@tanstack/react-router';
+import { useNavigate, Link, useRouter } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { Button } from '@/shadcn/button';
 import { Input } from '@/shadcn/input';
@@ -20,14 +20,18 @@ import {
 	SelectValue,
 } from '@/shadcn/select';
 import { Badge } from '@/shadcn/badge';
-import { ArrowLeftIcon, PlusIcon, XIcon, Loader2Icon } from 'lucide-react';
+import { ArrowLeftIcon, PlusIcon, XIcon, Loader2Icon, UploadIcon } from 'lucide-react';
 import { useRoomForm } from '../hooks/use-room-form';
 
 import { createRoomFn } from '../api/rooms.api';
+import { uploadRoomImageFn } from '../api/upload.api';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 export function AdminRoomCreatePage() {
 	const navigate = useNavigate();
+	const router = useRouter();
+	const queryClient = useQueryClient();
 	const {
 		isLoading,
 		setIsLoading,
@@ -36,6 +40,10 @@ export function AdminRoomCreatePage() {
 		setNewFacility,
 		addFacility,
 		removeFacility,
+		imagePreview,
+		imageFile,
+		handleImageChange,
+		removeImage,
 	} = useRoomForm();
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -44,18 +52,35 @@ export function AdminRoomCreatePage() {
 
 		const formData = new FormData(e.currentTarget);
 
-		const data = {
-			name: formData.get('name') as string,
-			capacity: parseInt(formData.get('capacity') as string, 10),
-			location: formData.get('location') as string,
-			description: formData.get('description') as string,
-			status: formData.get('status') as any, // Cast locally
-			facilities,
-		};
-
 		try {
+			let imageUrl: string | undefined;
+
+			if (imageFile) {
+				const base64 = await fileToBase64(imageFile);
+				const result = await uploadRoomImageFn({
+					data: {
+						base64,
+						fileName: imageFile.name,
+						contentType: imageFile.type,
+					},
+				});
+				imageUrl = result.url;
+			}
+
+			const data = {
+				name: formData.get('name') as string,
+				capacity: parseInt(formData.get('capacity') as string, 10),
+				location: formData.get('location') as string,
+				description: formData.get('description') as string,
+				status: formData.get('status') as any,
+				facilities,
+				image: imageUrl,
+			};
+
 			await createRoomFn({ data });
 			toast.success('Room created successfully');
+			queryClient.invalidateQueries({ queryKey: ['rooms'] });
+			await router.invalidate();
 			navigate({ to: '/admin/rooms' });
 		} catch (error) {
 			console.error('Failed to create room:', error);
@@ -151,6 +176,48 @@ export function AdminRoomCreatePage() {
 								</div>
 
 								<Field>
+									<FieldLabel>Room Image</FieldLabel>
+									<div className="space-y-3">
+										{imagePreview ? (
+											<div className="relative group w-full max-w-sm">
+												<img
+													src={imagePreview}
+													alt="Room preview"
+													className="w-full h-48 object-cover rounded-lg border"
+												/>
+												<button
+													type="button"
+													onClick={removeImage}
+													className="absolute top-2 right-2 rounded-full bg-destructive p-1.5 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+												>
+													<XIcon className="h-4 w-4" />
+												</button>
+											</div>
+										) : (
+											<label
+												htmlFor="image-upload"
+												className="flex h-48 max-w-sm cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/10 transition-colors hover:border-primary/50 hover:bg-muted/20"
+											>
+												<UploadIcon className="mb-2 h-8 w-8 text-muted-foreground/50" />
+												<span className="text-sm font-medium text-muted-foreground">
+													Click to upload image
+												</span>
+												<span className="mt-1 text-xs text-muted-foreground/70">
+													PNG, JPG, WebP up to 5MB
+												</span>
+											</label>
+										)}
+										<input
+											id="image-upload"
+											type="file"
+											accept="image/png,image/jpeg,image/webp"
+											onChange={handleImageChange}
+											className="hidden"
+										/>
+									</div>
+								</Field>
+
+								<Field>
 									<FieldLabel htmlFor="description">Description</FieldLabel>
 									<Textarea
 										id="description"
@@ -228,4 +295,18 @@ export function AdminRoomCreatePage() {
 			</motion.div>
 		</div>
 	);
+}
+
+function fileToBase64(file: File): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			const result = reader.result as string;
+			// Remove the data:...;base64, prefix
+			const base64 = result.split(',')[1];
+			resolve(base64);
+		};
+		reader.onerror = reject;
+		reader.readAsDataURL(file);
+	});
 }

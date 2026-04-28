@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { updateUserRoleFn, deleteUserFn } from '@/features/users/api/users.api';
+import { toast } from 'sonner';
 
 interface User {
 	id: string;
@@ -23,6 +24,7 @@ export function useAdminUsers(initialUsers: User[], initialStats: Stats) {
 	const [searchQuery, setSearchQuery] = React.useState('');
 	const [roleFilter, setRoleFilter] = React.useState<string>('ALL');
 	const [loadingId, setLoadingId] = React.useState<string | null>(null);
+	const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; name: string } | null>(null);
 
 	const filteredUsers = users.filter((user) => {
 		const matchesSearch =
@@ -56,22 +58,23 @@ export function useAdminUsers(initialUsers: User[], initialStats: Stats) {
 					students: prev.students + 1,
 				}));
 			}
+			toast.success('User role updated successfully');
 		} catch (err) {
 			console.error('Update role error:', err);
+			toast.error('Failed to update user role');
 		} finally {
 			setLoadingId(null);
 		}
 	};
 
-	const handleDelete = async (userId: string, userName: string) => {
-		if (
-			!confirm(
-				`Are you sure you want to delete "${userName}"? This will also delete all their reservations.`,
-			)
-		) {
-			return;
-		}
+	const requestDelete = (userId: string, userName: string) => {
+		setDeleteTarget({ id: userId, name: userName });
+	};
 
+	const confirmDelete = async () => {
+		if (!deleteTarget) return;
+		const { id: userId } = deleteTarget;
+		setDeleteTarget(null);
 		setLoadingId(userId);
 		try {
 			const userToDelete = users.find((u) => u.id === userId);
@@ -90,11 +93,17 @@ export function useAdminUsers(initialUsers: User[], initialStats: Stats) {
 					students: prev.students - 1,
 				}));
 			}
+			toast.success('User deleted successfully');
 		} catch (err) {
 			console.error('Delete user error:', err);
+			toast.error('Failed to delete user');
 		} finally {
 			setLoadingId(null);
 		}
+	};
+
+	const cancelDelete = () => {
+		setDeleteTarget(null);
 	};
 
 	return {
@@ -107,6 +116,9 @@ export function useAdminUsers(initialUsers: User[], initialStats: Stats) {
 		loadingId,
 		filteredUsers,
 		handleRoleChange,
-		handleDelete,
+		deleteTarget,
+		requestDelete,
+		confirmDelete,
+		cancelDelete,
 	};
 }

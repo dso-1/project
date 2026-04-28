@@ -1,5 +1,5 @@
 import type * as React from 'react';
-import { useNavigate, Link } from '@tanstack/react-router';
+import { useNavigate, Link, useRouter } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { Button } from '@/shadcn/button';
 import { Input } from '@/shadcn/input';
@@ -20,11 +20,13 @@ import {
 	SelectValue,
 } from '@/shadcn/select';
 import { Badge } from '@/shadcn/badge';
-import { ArrowLeftIcon, PlusIcon, XIcon, Loader2Icon } from 'lucide-react';
+import { ArrowLeftIcon, PlusIcon, XIcon, Loader2Icon, UploadIcon } from 'lucide-react';
 import { useRoomForm } from '../hooks/use-room-form';
 import { updateRoomFn } from '../api/rooms.api';
+import { uploadRoomImageFn, deleteRoomImageFn } from '../api/upload.api';
 import type { Room, RoomStatus } from '@prisma/client';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AdminRoomEditPageProps {
 	room: Room;
@@ -32,6 +34,8 @@ interface AdminRoomEditPageProps {
 
 export function AdminRoomEditPage({ room }: AdminRoomEditPageProps) {
 	const navigate = useNavigate();
+	const router = useRouter();
+	const queryClient = useQueryClient();
 	const {
 		isLoading,
 		setIsLoading,
@@ -40,7 +44,11 @@ export function AdminRoomEditPage({ room }: AdminRoomEditPageProps) {
 		setNewFacility,
 		addFacility,
 		removeFacility,
-	} = useRoomForm(room.facilities);
+		imagePreview,
+		imageFile,
+		handleImageChange,
+		removeImage,
+	} = useRoomForm(room.facilities, room.image);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -48,18 +56,53 @@ export function AdminRoomEditPage({ room }: AdminRoomEditPageProps) {
 
 		const formData = new FormData(e.currentTarget);
 
-		const data = {
-			name: formData.get('name') as string,
-			capacity: parseInt(formData.get('capacity') as string, 10),
-			location: formData.get('location') as string,
-			description: formData.get('description') as string,
-			status: formData.get('status') as RoomStatus,
-			facilities,
-		};
-
 		try {
+			let imageUrl: string | null | undefined = undefined;
+
+			// If user selected a new image
+			if (imageFile) {
+				// Delete old image from R2 if exists
+				if (room.image) {
+					try {
+						await deleteRoomImageFn({ data: { imageUrl: room.image } });
+					} catch {
+						// Ignore deletion errors
+					}
+				}
+
+				const base64 = await fileToBase64(imageFile);
+				const result = await uploadRoomImageFn({
+					data: {
+						base64,
+						fileName: imageFile.name,
+						contentType: imageFile.type,
+					},
+				});
+				imageUrl = result.url;
+			} else if (!imagePreview && room.image) {
+				// User removed the existing image
+				try {
+					await deleteRoomImageFn({ data: { imageUrl: room.image } });
+				} catch {
+					// Ignore deletion errors
+				}
+				imageUrl = null;
+			}
+
+			const data = {
+				name: formData.get('name') as string,
+				capacity: parseInt(formData.get('capacity') as string, 10),
+				location: formData.get('location') as string,
+				description: formData.get('description') as string,
+				status: formData.get('status') as RoomStatus,
+				facilities,
+				...(imageUrl !== undefined && { image: imageUrl }),
+			};
+
 			await updateRoomFn({ data: { id: room.id, data } });
 			toast.success('Room updated successfully');
+			queryClient.invalidateQueries({ queryKey: ['rooms'] });
+			await router.invalidate();
 			navigate({ to: '/admin/rooms' });
 		} catch (error) {
 			console.error('Failed to update room:', error);
@@ -156,6 +199,55 @@ export function AdminRoomEditPage({ room }: AdminRoomEditPageProps) {
 								</div>
 
 								<Field>
+									<FieldLabel>Room Image</FieldLabel>
+									<div className="space-y-3">
+										{imagePreview ? (
+											<div className="relative group w-full max-w-sm">
+												<img
+													src={imagePreview}
+													alt="Room preview"
+													className="w-full h-48 object-cover rounded-lg border"
+												/>
+												<div className="absolute inset-0 rounded-lg bg-black/0 group-hover:bg-black/20 transition-colors" />
+												<button
+													type="button"
+													onClick={removeImage}
+													className="absolute top-2 right-2 rounded-full bg-destructive p-1.5 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+												>
+													<XIcon className="h-4 w-4" />
+												</button>
+												<label
+													htmlFor="image-upload"
+													className="absolute bottom-2 right-2 cursor-pointer rounded-full bg-background p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-md border"
+												>
+													<UploadIcon className="h-4 w-4" />
+												</label>
+											</div>
+										) : (
+											<label
+												htmlFor="image-upload"
+												className="flex h-48 max-w-sm cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/10 transition-colors hover:border-primary/50 hover:bg-muted/20"
+											>
+												<UploadIcon className="mb-2 h-8 w-8 text-muted-foreground/50" />
+												<span className="text-sm font-medium text-muted-foreground">
+													Click to upload image
+												</span>
+												<span className="mt-1 text-xs text-muted-foreground/70">
+													PNG, JPG, WebP up to 5MB
+												</span>
+											</label>
+										)}
+										<input
+											id="image-upload"
+											type="file"
+											accept="image/png,image/jpeg,image/webp"
+											onChange={handleImageChange}
+											className="hidden"
+										/>
+									</div>
+								</Field>
+
+								<Field>
 									<FieldLabel htmlFor="description">Description</FieldLabel>
 									<Textarea
 										id="description"
@@ -234,4 +326,17 @@ export function AdminRoomEditPage({ room }: AdminRoomEditPageProps) {
 			</motion.div>
 		</div>
 	);
+}
+
+function fileToBase64(file: File): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			const result = reader.result as string;
+			const base64 = result.split(',')[1];
+			resolve(base64);
+		};
+		reader.onerror = reject;
+		reader.readAsDataURL(file);
+	});
 }
