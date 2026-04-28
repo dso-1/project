@@ -18,4 +18,4 @@ RUN bunx prisma generate
 
 EXPOSE 3000
 
-CMD ["bun", "run", "dev"]
+CMD ["bun", "run", "dev", "--host"]
