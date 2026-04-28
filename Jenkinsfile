@@ -1,9 +1,12 @@
 pipeline {
     agent any
 
+    options {
+        disableConcurrentBuilds()
+    }
+
     environment {
         VM_HOST = "10.34.100.178"
-        VM_USER = "deploy"
         APP_PORT = "8081"
         APP_NAME = "kelompok1_app"
         DB_NAME  = "kelompok1_db"
@@ -26,43 +29,55 @@ pipeline {
             }
         }
 
-        stage('Deploy to VM') {
+        stage('Transfer Image') {
             steps {
-                sh """
-                docker save ${IMAGE_NAME}:${IMAGE_TAG} | gzip > image.tar.gz
-                scp image.tar.gz ${VM_USER}@${VM_HOST}:/tmp/
+                sh "docker save ${IMAGE_NAME}:${IMAGE_TAG} | gzip > image.tar.gz"
+                
+                sshagent(['vm-kelompok1-ssh']) {
+                    sh """
+                    scp -o StrictHostKeyChecking=no image.tar.gz deploy@${VM_HOST}:/tmp/
+                    """
+                }
+            }
+        }
 
-                ssh ${VM_USER}@${VM_HOST} '
-                    docker load < /tmp/image.tar.gz
+        stage('Deploy on VM') {
+            steps {
+                sshagent(['vm-kelompok1-ssh']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no deploy@${VM_HOST} '
+                        
+                        docker load < /tmp/image.tar.gz
 
-                    docker stop ${APP_NAME} || true
-                    docker rm ${APP_NAME} || true
-                    docker stop ${DB_NAME} || true
-                    docker rm ${DB_NAME} || true
+                        docker stop ${APP_NAME} || true
+                        docker rm ${APP_NAME} || true
+                        docker stop ${DB_NAME} || true
+                        docker rm ${DB_NAME} || true
 
-                    docker run -d \
-                      --name ${DB_NAME} \
-                      -e POSTGRES_USER=goreserve \
-                      -e POSTGRES_PASSWORD=goreserve \
-                      -e POSTGRES_DB=go_reserve \
-                      -p 5432:5432 \
-                      postgres:15
+                        docker run -d \
+                          --name ${DB_NAME} \
+                          -e POSTGRES_USER=goreserve \
+                          -e POSTGRES_PASSWORD=goreserve \
+                          -e POSTGRES_DB=go_reserve \
+                          -p 5432:5432 \
+                          postgres:15
 
-                    sleep 5
+                        sleep 5
 
-                    docker run -d \
-                      --name ${APP_NAME} \
-                      --link ${DB_NAME}:db \
-                      -e DATABASE_URL=postgresql://goreserve:goreserve@db:5432/go_reserve \
-                      -p ${APP_PORT}:3000 \
-                      ${IMAGE_NAME}:${IMAGE_TAG}
+                        docker run -d \
+                          --name ${APP_NAME} \
+                          --link ${DB_NAME}:db \
+                          -e DATABASE_URL=postgresql://goreserve:goreserve@db:5432/go_reserve \
+                          -p ${APP_PORT}:3000 \
+                          ${IMAGE_NAME}:${IMAGE_TAG}
 
-                    sleep 5
+                        sleep 5
 
-                    docker exec ${APP_NAME} bunx prisma db push
-                    docker exec ${APP_NAME} bun run db:seed
-                '
-                """
+                        docker exec ${APP_NAME} bunx prisma db push
+                        docker exec ${APP_NAME} bun run db:seed
+                    '
+                    """
+                }
             }
         }
 
@@ -75,7 +90,7 @@ pipeline {
 
     post {
         success {
-            echo "✅ Deploy sukses di http://${VM_HOST}:${APP_PORT}"
+            echo "✅ Deploy sukses: http://${VM_HOST}:${APP_PORT}"
         }
         failure {
             echo "❌ Deploy gagal"
