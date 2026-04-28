@@ -143,7 +143,7 @@ export function HomePage() {
 					>
 						Go Reserve is the official room reservation system for Faculty of
 						Computer Science, Universitas Brawijaya. Find and book labs, seminar
-						rooms, and meeting spaces in just a few clicks | Punya kelompok 1 cihuuyyy.
+						rooms, and meeting spaces in just a few clicks.
 					</motion.p>
 
 					<motion.div
