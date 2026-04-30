@@ -11,16 +11,6 @@ A comprehensive room reservation system built with TanStack Start, Prisma, and P
 - **User Management**: Administrative control over user accounts.
 - **Landing Pages**: Public-facing pages including Home, About, Services, and Contact.
 
-## Tech Stack
-
-- **Framework**: TanStack Start
-- **Language**: TypeScript
-- **Database**: PostgreSQL with Prisma ORM
-- **Styling**: Tailwind CSS v4, Shadcn UI, and Framer Motion
-- **State Management**: TanStack Query
-- **Testing**: Vitest and React Testing Library
-- **Tooling**: Biome (Linting/Formatting), Husky (Git hooks)
-
 ## Getting Started
 
 ### Prerequisites
