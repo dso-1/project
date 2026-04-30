@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import Lenis from 'lenis';
 import { useLocation } from '@tanstack/react-router';
+import Lenis from 'lenis';
+import { useEffect } from 'react';
 
 export function SmoothScroll() {
 	const location = useLocation();

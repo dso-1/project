@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { updateUserRoleFn, deleteUserFn } from '@/features/users/api/users.api';
 import { toast } from 'sonner';
+import { deleteUserFn, updateUserRoleFn } from '@/features/users/api/users.api';
 
 interface User {
 	id: string;
@@ -24,7 +24,10 @@ export function useAdminUsers(initialUsers: User[], initialStats: Stats) {
 	const [searchQuery, setSearchQuery] = React.useState('');
 	const [roleFilter, setRoleFilter] = React.useState<string>('ALL');
 	const [loadingId, setLoadingId] = React.useState<string | null>(null);
-	const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; name: string } | null>(null);
+	const [deleteTarget, setDeleteTarget] = React.useState<{
+		id: string;
+		name: string;
+	} | null>(null);
 
 	const filteredUsers = users.filter((user) => {
 		const matchesSearch =

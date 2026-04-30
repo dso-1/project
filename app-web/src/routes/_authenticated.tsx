@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Outlet } from '@tanstack/react-router';
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 import { DashboardLayout } from '@/features/dashboard/components/dashboard-layout';
 
 export const Route = createFileRoute('/_authenticated')({

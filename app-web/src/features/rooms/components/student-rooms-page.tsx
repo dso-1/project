@@ -1,22 +1,21 @@
-import type * as React from 'react';
-import { Link } from '@tanstack/react-router'; // Only if needed? Actually useRouter is for invalidation.
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+	DoorOpenIcon,
+	Loader2Icon,
+	MapPinIcon,
+	SearchIcon,
+	UsersIcon,
+	XIcon,
+} from 'lucide-react';
 import { Badge } from '@/shadcn/badge';
 import { Button } from '@/shadcn/button';
 import { Card, CardContent } from '@/shadcn/card';
 import { Input } from '@/shadcn/input';
 import { Label } from '@/shadcn/label';
 import { Textarea } from '@/shadcn/textarea';
-import {
-	DoorOpenIcon,
-	UsersIcon,
-	SearchIcon,
-	MapPinIcon,
-	XIcon,
-	Loader2Icon,
-} from 'lucide-react';
-import { useStudentRooms } from '../hooks/use-student-rooms';
+import { RoomImage } from './room-image';
 import { useBookingForm } from '../hooks/use-booking-form';
+import { useStudentRooms } from '../hooks/use-student-rooms';
 
 // Moving Room interface here for now, or importing if it exists elsewhere.
 // It was defined locally in the route file.
@@ -91,11 +90,7 @@ export function StudentRoomsPage({ rooms }: StudentRoomsPageProps) {
 						<Card className="h-full overflow-hidden transition-shadow hover:shadow-lg">
 							<div className="flex h-40 items-center justify-center bg-linear-to-br from-primary/20 to-primary/5">
 								{room.image ? (
-									<img
-										src={room.image}
-										alt={room.name}
-										className="h-full w-full object-cover"
-									/>
+									<RoomImage src={room.image} alt={room.name} />
 								) : (
 									<DoorOpenIcon className="h-16 w-16 text-primary/30" />
 								)}

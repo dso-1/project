@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { updateReservationStatusFn } from '@/features/reservations/api/reservations.api';
 import { toast } from 'sonner';
+import { updateReservationStatusFn } from '@/features/reservations/api/reservations.api';
 
 interface Reservation {
 	id: string;

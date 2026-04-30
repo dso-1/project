@@ -4,7 +4,10 @@ import { toast } from 'sonner';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
-export function useRoomForm(initialFacilities: string[] = [], initialImage?: string | null) {
+export function useRoomForm(
+	initialFacilities: string[] = [],
+	initialImage?: string | null,
+) {
 	const [isLoading, setIsLoading] = React.useState(false);
 	const [facilities, setFacilities] =
 		React.useState<string[]>(initialFacilities);

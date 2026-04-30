@@ -1,28 +1,20 @@
 import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
-import { FloatingNavbar } from '@/shared/components/floating-navbar';
-import { Footer } from '@/shared/components/footer';
-import { Button } from '@/shadcn/button';
-import { Badge } from '@/shadcn/badge';
 import {
-	DoorOpenIcon,
-	UsersIcon,
 	ArrowRightIcon,
 	CheckIcon,
+	DoorOpenIcon,
+	UsersIcon,
 } from 'lucide-react';
-
-interface Room {
-	id: string;
-	name: string;
-	capacity: number;
-	location: string | null;
-	facilities: string[];
-	description: string | null;
-	image: string | null;
-}
-// I'll assume that exists, otherwise I'll need to define it or import from prisma.
-
-// For now, let's define the props interface clearly.
+import {
+	useLandingAvailableRooms,
+	useLandingRoomStats,
+} from '@/features/landing/hooks/use-landing-data';
+import { RoomImage } from '@/features/rooms/components/room-image';
+import { Badge } from '@/shadcn/badge';
+import { Button } from '@/shadcn/button';
+import { FloatingNavbar } from '@/shared/components/floating-navbar';
+import { Footer } from '@/shared/components/footer';
 
 const bookingSteps = [
 	{
@@ -47,18 +39,32 @@ const bookingSteps = [
 	},
 ];
 
-interface ServicesPageProps {
-	rooms: Room[];
-	// Re-checking imports from original file: "import { getAvailableRoomsFn, getRoomStatsFn } from '@/features/rooms/api/rooms.api';"
-	// It didn't explicitly import a Room type.
-	stats: {
-		total: number;
-		available: number;
-		maintenance: number;
-	};
+function SectionErrorFallback({
+	title,
+	description,
+	onRetry,
+}: {
+	title: string;
+	description: string;
+	onRetry: () => void;
+}) {
+	return (
+		<div className="rounded-2xl border border-dashed bg-card p-8 text-center">
+			<h3 className="text-xl font-semibold">{title}</h3>
+			<p className="mt-2 text-sm text-muted-foreground">{description}</p>
+			<Button className="mt-4" variant="outline" onClick={onRetry}>
+				Coba lagi
+			</Button>
+		</div>
+	);
 }
 
-export function ServicesPage({ rooms, stats }: ServicesPageProps) {
+export function ServicesPage() {
+	const statsQuery = useLandingRoomStats();
+	const roomsQuery = useLandingAvailableRooms();
+	const stats = statsQuery.data;
+	const rooms = roomsQuery.data ?? [];
+
 	return (
 		<div className="min-h-screen bg-background">
 			<FloatingNavbar />
@@ -76,15 +82,29 @@ export function ServicesPage({ rooms, stats }: ServicesPageProps) {
 						Discover the variety of rooms available for booking at FILKOM UB.
 						From computer labs to seminar halls, we have spaces for every need.
 					</p>
-					<div className="mt-6 flex justify-center gap-4 text-sm">
-						<Badge variant="outline" className="text-base px-4 py-2">
-							<DoorOpenIcon className="mr-2 h-4 w-4" />
-							{stats.total} Total Rooms
-						</Badge>
-						<Badge className="bg-green-500/20 text-green-700 text-base px-4 py-2">
-							{stats.available} Available
-						</Badge>
-					</div>
+					{statsQuery.isError && !stats ? (
+						<div className="mx-auto mt-6 max-w-md">
+							<SectionErrorFallback
+								title="Statistik ruangan belum tersedia"
+								description="Informasi total dan ketersediaan ruangan gagal dimuat."
+								onRetry={() => statsQuery.refetch()}
+							/>
+						</div>
+					) : (
+						<div className="mt-6 flex justify-center gap-4 text-sm">
+							<Badge variant="outline" className="px-4 py-2 text-base">
+								<DoorOpenIcon className="mr-2 h-4 w-4" />
+								{stats
+									? `${stats.total} Total Rooms`
+									: 'Loading total rooms...'}
+							</Badge>
+							<Badge className="bg-green-500/20 px-4 py-2 text-base text-green-700">
+								{stats
+									? `${stats.available} Available`
+									: 'Loading availability...'}
+							</Badge>
+						</div>
+					)}
 				</motion.div>
 			</section>
 
@@ -135,72 +155,93 @@ export function ServicesPage({ rooms, stats }: ServicesPageProps) {
 					>
 						<h2 className="text-3xl font-bold">Available Rooms</h2>
 						<p className="mt-4 text-muted-foreground">
-							Browse our selection of {rooms.length} available rooms.
+							{roomsQuery.isPending
+								? 'Loading available rooms...'
+								: `Browse our selection of ${rooms.length} available rooms.`}
 						</p>
 					</motion.div>
 
-					<div className="mx-auto mt-12 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-						{rooms.map((room, index) => (
-							<motion.div
-								key={room.id}
-								initial={{ opacity: 0, y: 20 }}
-								whileInView={{ opacity: 1, y: 0 }}
-								viewport={{ once: true }}
-								transition={{ delay: index * 0.05 }}
-								whileHover={{ y: -5 }}
-								className="group overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-lg"
-							>
-								{room.image ? (
-									<div className="h-32 w-full overflow-hidden">
-										<img
-											src={room.image}
-											alt={room.name}
-											className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-										/>
-									</div>
-								) : (
-									<div className="flex h-32 items-center justify-center bg-linear-to-br from-primary/20 to-primary/5">
-										<DoorOpenIcon className="h-12 w-12 text-primary/50" />
-									</div>
-								)}
+					{roomsQuery.isError && rooms.length === 0 ? (
+						<div className="mx-auto mt-12 max-w-2xl">
+							<SectionErrorFallback
+								title="Daftar ruangan gagal dimuat"
+								description="Section ini sedang bermasalah, tetapi bagian halaman lainnya tetap bisa digunakan."
+								onRetry={() => roomsQuery.refetch()}
+							/>
+						</div>
+					) : roomsQuery.isPending ? (
+						<div className="mx-auto mt-12 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+							{Array.from({ length: 8 }).map((_, index) => (
+								<div
+									key={index.toString()}
+									className="h-72 animate-pulse rounded-xl bg-muted"
+								/>
+							))}
+						</div>
+					) : (
+						<div className="mx-auto mt-12 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+							{rooms.map((room, index) => (
+								<motion.div
+									key={room.id}
+									initial={{ opacity: 0, y: 20 }}
+									whileInView={{ opacity: 1, y: 0 }}
+									viewport={{ once: true }}
+									transition={{ delay: index * 0.05 }}
+									whileHover={{ y: -5 }}
+									className="group overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-lg"
+								>
+									{room.image ? (
+										<div className="h-32 w-full overflow-hidden">
+											<RoomImage
+												src={room.image}
+												alt={room.name}
+												imageClassName="transition-transform duration-300 group-hover:scale-105"
+											/>
+										</div>
+									) : (
+										<div className="flex h-32 items-center justify-center bg-linear-to-br from-primary/20 to-primary/5">
+											<DoorOpenIcon className="h-12 w-12 text-primary/50" />
+										</div>
+									)}
 
-								<div className="p-4">
-									<div className="flex items-start justify-between">
-										<h3 className="font-semibold">{room.name}</h3>
-										<Badge className="bg-green-500/20 text-green-700 text-xs">
-											Available
-										</Badge>
-									</div>
-
-									<p className="mt-1 text-sm text-muted-foreground">
-										{room.location || 'FILKOM UB'}
-									</p>
-
-									<div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-										<UsersIcon className="h-4 w-4" />
-										<span>{room.capacity} seats</span>
-									</div>
-
-									<div className="mt-3 flex flex-wrap gap-1">
-										{room.facilities.slice(0, 3).map((facility: string) => (
-											<Badge
-												key={facility}
-												variant="outline"
-												className="text-xs"
-											>
-												{facility}
+									<div className="p-4">
+										<div className="flex items-start justify-between">
+											<h3 className="font-semibold">{room.name}</h3>
+											<Badge className="bg-green-500/20 text-xs text-green-700">
+												Available
 											</Badge>
-										))}
-										{room.facilities.length > 3 && (
-											<Badge variant="outline" className="text-xs">
-												+{room.facilities.length - 3}
-											</Badge>
-										)}
+										</div>
+
+										<p className="mt-1 text-sm text-muted-foreground">
+											{room.location || 'FILKOM UB'}
+										</p>
+
+										<div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+											<UsersIcon className="h-4 w-4" />
+											<span>{room.capacity} seats</span>
+										</div>
+
+										<div className="mt-3 flex flex-wrap gap-1">
+											{room.facilities.slice(0, 3).map((facility: string) => (
+												<Badge
+													key={facility}
+													variant="outline"
+													className="text-xs"
+												>
+													{facility}
+												</Badge>
+											))}
+											{room.facilities.length > 3 && (
+												<Badge variant="outline" className="text-xs">
+													+{room.facilities.length - 3}
+												</Badge>
+											)}
+										</div>
 									</div>
-								</div>
-							</motion.div>
-						))}
-					</div>
+								</motion.div>
+							))}
+						</div>
+					)}
 
 					<motion.div
 						initial={{ opacity: 0, y: 20 }}

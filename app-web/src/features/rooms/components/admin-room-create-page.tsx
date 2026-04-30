@@ -1,9 +1,17 @@
-import type * as React from 'react';
-import { useNavigate, Link, useRouter } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
+import { Link, useNavigate, useRouter } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
+import {
+	ArrowLeftIcon,
+	Loader2Icon,
+	PlusIcon,
+	UploadIcon,
+	XIcon,
+} from 'lucide-react';
+import type * as React from 'react';
+import { toast } from 'sonner';
+import { Badge } from '@/shadcn/badge';
 import { Button } from '@/shadcn/button';
-import { Input } from '@/shadcn/input';
-import { Textarea } from '@/shadcn/textarea';
 import {
 	Card,
 	CardContent,
@@ -12,6 +20,7 @@ import {
 	CardTitle,
 } from '@/shadcn/card';
 import { Field, FieldGroup, FieldLabel } from '@/shadcn/field';
+import { Input } from '@/shadcn/input';
 import {
 	Select,
 	SelectContent,
@@ -19,14 +28,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/shadcn/select';
-import { Badge } from '@/shadcn/badge';
-import { ArrowLeftIcon, PlusIcon, XIcon, Loader2Icon, UploadIcon } from 'lucide-react';
-import { useRoomForm } from '../hooks/use-room-form';
-
+import { Textarea } from '@/shadcn/textarea';
 import { createRoomFn } from '../api/rooms.api';
 import { uploadRoomImageFn } from '../api/upload.api';
-import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
+import { useRoomForm } from '../hooks/use-room-form';
 
 export function AdminRoomCreatePage() {
 	const navigate = useNavigate();

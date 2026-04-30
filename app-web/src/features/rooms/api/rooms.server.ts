@@ -1,5 +1,5 @@
-import { prisma } from '@/shared/lib/prisma';
 import type { RoomStatus } from '@/shared/lib/prisma';
+import { prisma } from '@/shared/lib/prisma';
 
 export async function getRooms(status?: RoomStatus) {
 	return prisma.room.findMany({

@@ -1,9 +1,10 @@
+import { Loader2Icon, PlusIcon, XIcon } from 'lucide-react';
 import * as React from 'react';
+import { Badge } from '@/shadcn/badge';
 import { Button } from '@/shadcn/button';
-import { Input } from '@/shadcn/input';
-import { Textarea } from '@/shadcn/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shadcn/card';
 import { Field, FieldGroup, FieldLabel } from '@/shadcn/field';
+import { Input } from '@/shadcn/input';
 import {
 	Select,
 	SelectContent,
@@ -11,9 +12,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/shadcn/select';
-import { Badge } from '@/shadcn/badge';
-import { XIcon, PlusIcon, Loader2Icon } from 'lucide-react';
-import type { Room, CreateRoomInput, UpdateRoomInput } from '../types';
+import { Textarea } from '@/shadcn/textarea';
+import type { CreateRoomInput, Room, UpdateRoomInput } from '../types';
 
 interface RoomFormProps {
 	room?: Room;

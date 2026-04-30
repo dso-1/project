@@ -1,16 +1,16 @@
-import * as React from 'react';
+import { TanStackDevtools } from '@tanstack/react-devtools';
+import { QueryClientProvider } from '@tanstack/react-query';
 import {
-	HeadContent,
-	Scripts,
 	createRootRoute,
+	HeadContent,
 	Outlet,
+	Scripts,
 	ScrollRestoration,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
-import { TanStackDevtools } from '@tanstack/react-devtools';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { getQueryClient } from '@/shared/lib/query-client';
+import type * as React from 'react';
 import { AuthProvider } from '@/features/auth/hooks/use-auth';
+import { getQueryClient } from '@/shared/lib/query-client';
 
 import appCss from '@/shared/styles/globals.css?url';
 

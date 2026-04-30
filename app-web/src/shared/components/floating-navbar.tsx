@@ -1,11 +1,16 @@
-import * as React from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
+import {
+	DoorOpenIcon,
+	LayoutDashboardIcon,
+	MenuIcon,
+	XIcon,
+} from 'lucide-react';
+import * as React from 'react';
+import { useAuth } from '@/features/auth/hooks/use-auth';
 import { Button } from '@/shadcn/button';
 import { cn } from '@/shared/utils';
-import { DoorOpenIcon, MenuIcon, XIcon, LayoutDashboardIcon } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
-import { useAuth } from '@/features/auth/hooks/use-auth';
 
 const navLinks = [
 	{ label: 'Home', to: '/' },
@@ -178,7 +183,10 @@ export function FloatingNavbar() {
 								);
 							})}
 							{isAuthenticated ? (
-								<Link to={dashboardPath} onClick={() => setMobileMenuOpen(false)}>
+								<Link
+									to={dashboardPath}
+									onClick={() => setMobileMenuOpen(false)}
+								>
 									<Button className="mt-2 w-full gap-2">
 										<LayoutDashboardIcon className="h-4 w-4" />
 										Dashboard

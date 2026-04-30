@@ -1,14 +1,15 @@
-import { cn } from '@/shared/utils';
-import { Card, CardContent, CardFooter, CardHeader } from '@/shadcn/card';
-import { Badge } from '@/shadcn/badge';
-import { Button } from '@/shadcn/button';
 import {
-	UsersIcon,
-	MapPinIcon,
-	WrenchIcon,
 	CheckCircleIcon,
+	MapPinIcon,
+	UsersIcon,
+	WrenchIcon,
 	XCircleIcon,
 } from 'lucide-react';
+import { Badge } from '@/shadcn/badge';
+import { Button } from '@/shadcn/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/shadcn/card';
+import { cn } from '@/shared/utils';
+import { RoomImage } from './room-image';
 import type { Room } from '../types';
 
 interface RoomCardProps {
@@ -51,10 +52,10 @@ export function RoomCard({
 		<Card className="overflow-hidden transition-all hover:shadow-lg group">
 			<div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
 				{room.image ? (
-					<img
+					<RoomImage
 						src={room.image}
 						alt={room.name}
-						className="h-full w-full object-cover transition-transform group-hover:scale-105"
+						imageClassName="transition-transform group-hover:scale-105"
 					/>
 				) : (
 					<div className="flex h-full items-center justify-center">

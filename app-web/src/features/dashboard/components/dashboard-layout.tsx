@@ -1,10 +1,10 @@
+import { useStore } from '@tanstack/react-store';
+import { MenuIcon } from 'lucide-react';
 import type * as React from 'react';
+import { Button } from '@/shadcn/button';
+import { uiActions, uiStore } from '@/shared/stores/ui-store';
 import { cn } from '@/shared/utils';
 import { Sidebar } from './sidebar';
-import { useStore } from '@tanstack/react-store';
-import { uiStore, uiActions } from '@/shared/stores/ui-store';
-import { Button } from '@/shadcn/button';
-import { MenuIcon } from 'lucide-react';
 
 interface DashboardLayoutProps {
 	children: React.ReactNode;

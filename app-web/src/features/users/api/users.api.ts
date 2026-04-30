@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start';
-import { prisma } from '@/shared/lib/prisma';
 import { hash } from 'bcryptjs';
+import { prisma } from '@/shared/lib/prisma';
 
 export const getUsersFn = createServerFn({ method: 'GET' }).handler(
 	async () => {

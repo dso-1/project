@@ -1,6 +1,34 @@
+import {
+	BellIcon,
+	BluetoothIcon,
+	CreditCardIcon,
+	DownloadIcon,
+	EyeIcon,
+	FileCodeIcon,
+	FileIcon,
+	FileTextIcon,
+	FolderIcon,
+	FolderOpenIcon,
+	FolderSearchIcon,
+	HelpCircleIcon,
+	KeyboardIcon,
+	LanguagesIcon,
+	LayoutIcon,
+	LogOutIcon,
+	MailIcon,
+	MonitorIcon,
+	MoonIcon,
+	MoreHorizontalIcon,
+	MoreVerticalIcon,
+	PaletteIcon,
+	PlusIcon,
+	SaveIcon,
+	SettingsIcon,
+	ShieldIcon,
+	SunIcon,
+	UserIcon,
+} from 'lucide-react';
 import * as React from 'react';
-
-import { Example, ExampleWrapper } from '@/shared/components/example';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -60,36 +88,7 @@ import {
 	SelectValue,
 } from '@/shadcn/select';
 import { Textarea } from '@/shadcn/textarea';
-import {
-	PlusIcon,
-	BluetoothIcon,
-	MoreVerticalIcon,
-	FileIcon,
-	FolderIcon,
-	FolderOpenIcon,
-	FileCodeIcon,
-	MoreHorizontalIcon,
-	FolderSearchIcon,
-	SaveIcon,
-	DownloadIcon,
-	EyeIcon,
-	LayoutIcon,
-	PaletteIcon,
-	SunIcon,
-	MoonIcon,
-	MonitorIcon,
-	UserIcon,
-	CreditCardIcon,
-	SettingsIcon,
-	KeyboardIcon,
-	LanguagesIcon,
-	BellIcon,
-	MailIcon,
-	ShieldIcon,
-	HelpCircleIcon,
-	FileTextIcon,
-	LogOutIcon,
-} from 'lucide-react';
+import { Example, ExampleWrapper } from '@/shared/components/example';
 
 export function ComponentExample() {
 	return (

@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
-import { uploadToR2, deleteFromR2 } from '@/shared/lib/r2';
+import { deleteFromR2, uploadToR2 } from '@/shared/lib/r2';
 
 export const uploadRoomImageFn = createServerFn({ method: 'POST' })
 	.inputValidator(

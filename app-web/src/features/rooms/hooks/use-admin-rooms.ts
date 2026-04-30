@@ -1,10 +1,10 @@
-import * as React from 'react';
-
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from '@tanstack/react-router';
-import { getRoomsFn, deleteRoomFn } from '../api/rooms.api';
 import type { Room } from '@prisma/client';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from '@tanstack/react-router';
+import * as React from 'react';
 import { toast } from 'sonner';
+import { deleteRoomFn, getRoomsFn } from '../api/rooms.api';
 
 export function useAdminRooms() {
 	const [searchQuery, setSearchQuery] = React.useState('');

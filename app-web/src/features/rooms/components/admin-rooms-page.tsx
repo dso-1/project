@@ -1,15 +1,14 @@
-import type * as React from 'react';
 import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
-import { Button } from '@/shadcn/button';
-import { Badge } from '@/shadcn/badge';
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '@/shadcn/card';
+	DoorOpenIcon,
+	Loader2Icon,
+	PencilIcon,
+	PlusIcon,
+	SearchIcon,
+	TrashIcon,
+	UsersIcon,
+} from 'lucide-react';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -20,16 +19,17 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/shadcn/alert-dialog';
+import { Badge } from '@/shadcn/badge';
+import { Button } from '@/shadcn/button';
 import {
-	TrashIcon,
-	UsersIcon,
-	SearchIcon,
-	DoorOpenIcon,
-	PlusIcon,
-	PencilIcon,
-	Loader2Icon,
-} from 'lucide-react';
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/shadcn/card';
 import { Input } from '@/shadcn/input';
+import { RoomImage } from './room-image';
 import { useAdminRooms } from '../hooks/use-admin-rooms'; // Import hook
 
 const statusConfig = {
@@ -165,10 +165,10 @@ export function AdminRoomsPage() {
 													<div className="flex items-center gap-3">
 														{room.image ? (
 															<div className="h-12 w-12 overflow-hidden rounded-lg">
-																<img
+																<RoomImage
 																	src={room.image}
 																	alt={room.name}
-																	className="h-full w-full object-cover"
+																	fallbackIconClassName="h-5 w-5 text-primary"
 																/>
 															</div>
 														) : (
@@ -257,7 +257,12 @@ export function AdminRoomsPage() {
 			</motion.div>
 
 			{/* Delete Confirmation Dialog */}
-			<AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) cancelDelete(); }}>
+			<AlertDialog
+				open={!!deleteTarget}
+				onOpenChange={(open) => {
+					if (!open) cancelDelete();
+				}}
+			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete Room</AlertDialogTitle>
@@ -268,10 +273,7 @@ export function AdminRoomsPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel onClick={cancelDelete}>Cancel</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={confirmDelete}
-							variant="destructive"
-						>
+						<AlertDialogAction onClick={confirmDelete} variant="destructive">
 							{isDeleting ? (
 								<>
 									<Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
