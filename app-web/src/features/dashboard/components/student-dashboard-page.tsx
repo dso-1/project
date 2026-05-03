@@ -1,5 +1,17 @@
 import { Link } from '@tanstack/react-router';
+import {
+	ArrowRightIcon,
+	BanIcon,
+	CalendarIcon,
+	CheckCircleIcon,
+	ClockIcon,
+	DoorOpenIcon,
+	HourglassIcon,
+	XCircleIcon,
+} from 'lucide-react';
 import { StatsCard } from '@/features/dashboard/components/stats-card';
+import { Badge } from '@/shadcn/badge';
+import { Button } from '@/shadcn/button';
 import {
 	Card,
 	CardContent,
@@ -7,18 +19,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/shadcn/card';
-import { Button } from '@/shadcn/button';
-import { Badge } from '@/shadcn/badge';
-import {
-	CalendarIcon,
-	ClockIcon,
-	DoorOpenIcon,
-	ArrowRightIcon,
-	CheckCircleIcon,
-	XCircleIcon,
-	HourglassIcon,
-	BanIcon,
-} from 'lucide-react';
 
 interface StudentDashboardPageProps {
 	stats: {

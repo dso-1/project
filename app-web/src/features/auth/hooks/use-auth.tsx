@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import * as React from 'react';
 import { logoutFn, validateUserFn } from '@/features/auth/api/auth.server';
 
 interface User {

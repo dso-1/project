@@ -1,6 +1,6 @@
-import * as React from 'react';
-import { cn } from '@/shared/utils';
+import type * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shadcn/card';
+import { cn } from '@/shared/utils';
 
 interface StatsCardProps {
 	title: string;

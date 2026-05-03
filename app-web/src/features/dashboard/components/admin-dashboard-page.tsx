@@ -1,6 +1,18 @@
 import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
+import {
+	ArrowRightIcon,
+	CalendarIcon,
+	CheckIcon,
+	ClockIcon,
+	DoorOpenIcon,
+	PlusIcon,
+	UsersIcon,
+	XIcon,
+} from 'lucide-react';
 import { StatsCard } from '@/features/dashboard/components/stats-card';
+import { Badge } from '@/shadcn/badge';
+import { Button } from '@/shadcn/button';
 import {
 	Card,
 	CardContent,
@@ -8,18 +20,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/shadcn/card';
-import { Button } from '@/shadcn/button';
-import { Badge } from '@/shadcn/badge';
-import {
-	DoorOpenIcon,
-	CalendarIcon,
-	UsersIcon,
-	ClockIcon,
-	PlusIcon,
-	ArrowRightIcon,
-	CheckIcon,
-	XIcon,
-} from 'lucide-react';
 
 interface AdminDashboardPageProps {
 	dashboardStats: {

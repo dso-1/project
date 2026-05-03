@@ -1,5 +1,5 @@
-import { RoomCard } from './room-card';
 import type { Room } from '../types';
+import { RoomCard } from './room-card';
 
 interface RoomGridProps {
 	rooms: Room[];

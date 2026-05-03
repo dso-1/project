@@ -1,20 +1,20 @@
 import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
+import {
+	ArrowRightIcon,
+	BuildingIcon,
+	CalendarIcon,
+	CheckIcon,
+	ClockIcon,
+	DoorOpenIcon,
+	ShieldCheckIcon,
+	StarIcon,
+	UsersIcon,
+	ZapIcon,
+} from 'lucide-react';
 import { Button } from '@/shadcn/button';
 import { FloatingNavbar } from '@/shared/components/floating-navbar';
 import { Footer } from '@/shared/components/footer';
-import {
-	DoorOpenIcon,
-	CalendarIcon,
-	ShieldCheckIcon,
-	ArrowRightIcon,
-	CheckIcon,
-	ClockIcon,
-	UsersIcon,
-	StarIcon,
-	ZapIcon,
-	BuildingIcon,
-} from 'lucide-react';
 
 const fadeInUp = {
 	initial: { opacity: 0, y: 20 },

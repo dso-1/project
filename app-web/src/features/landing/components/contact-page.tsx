@@ -1,19 +1,19 @@
 import { motion } from 'framer-motion';
-import { FloatingNavbar } from '@/shared/components/floating-navbar';
-import { Footer } from '@/shared/components/footer';
+import {
+	ClockIcon,
+	Loader2Icon,
+	MailIcon,
+	MapPinIcon,
+	PhoneIcon,
+	SendIcon,
+} from 'lucide-react';
 import { Button } from '@/shadcn/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shadcn/card';
+import { Field, FieldGroup, FieldLabel } from '@/shadcn/field';
 import { Input } from '@/shadcn/input';
 import { Textarea } from '@/shadcn/textarea';
-import { Field, FieldGroup, FieldLabel } from '@/shadcn/field';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shadcn/card';
-import {
-	MailIcon,
-	PhoneIcon,
-	MapPinIcon,
-	ClockIcon,
-	SendIcon,
-	Loader2Icon,
-} from 'lucide-react';
+import { FloatingNavbar } from '@/shared/components/floating-navbar';
+import { Footer } from '@/shared/components/footer';
 import { useContactForm } from '../hooks/use-contact-form';
 
 const contactInfo = [

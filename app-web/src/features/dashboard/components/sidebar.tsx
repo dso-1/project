@@ -1,19 +1,19 @@
-import * as React from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
-import { cn } from '@/shared/utils';
-import { useAuth } from '@/features/auth/hooks/use-auth';
-import { Button } from '@/shadcn/button';
 import {
-	LayoutDashboardIcon,
-	DoorOpenIcon,
 	CalendarIcon,
-	HistoryIcon,
-	UsersIcon,
-	LogOutIcon,
 	ChevronLeftIcon,
 	ChevronRightIcon,
+	DoorOpenIcon,
+	HistoryIcon,
+	LayoutDashboardIcon,
+	LogOutIcon,
+	UsersIcon,
 	XIcon,
 } from 'lucide-react';
+import type * as React from 'react';
+import { useAuth } from '@/features/auth/hooks/use-auth';
+import { Button } from '@/shadcn/button';
+import { cn } from '@/shared/utils';
 
 interface NavItem {
 	label: string;
@@ -95,12 +95,12 @@ export function Sidebar({
 		>
 			<div className="flex h-16 items-center justify-between border-b px-4">
 				{!collapsed && (
-					<div className="flex items-center gap-2">
-						<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70">
+					<Link to="/" className="flex items-center gap-2">
+						<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/70">
 							<DoorOpenIcon className="h-4 w-4 text-primary-foreground" />
 						</div>
 						<span className="font-bold text-lg">Go Reserve</span>
-					</div>
+					</Link>
 				)}
 				<Button
 					variant="ghost"

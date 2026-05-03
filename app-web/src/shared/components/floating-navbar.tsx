@@ -1,9 +1,15 @@
-import * as React from 'react';
 import { Link, useLocation } from '@tanstack/react-router';
-import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
+import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
+import {
+	DoorOpenIcon,
+	LayoutDashboardIcon,
+	MenuIcon,
+	XIcon,
+} from 'lucide-react';
+import * as React from 'react';
+import { useAuth } from '@/features/auth/hooks/use-auth';
 import { Button } from '@/shadcn/button';
 import { cn } from '@/shared/utils';
-import { DoorOpenIcon, MenuIcon, XIcon } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
 
 const navLinks = [
@@ -19,6 +25,9 @@ export function FloatingNavbar() {
 	const location = useLocation();
 	const { scrollY } = useScroll();
 	const isMobile = useIsMobile();
+	const { user, isAuthenticated } = useAuth();
+
+	const dashboardPath = user?.role === 'ADMIN' ? '/admin' : '/student';
 
 	useMotionValueEvent(scrollY, 'change', (latest) => {
 		setIsScrolled(latest > 50);
@@ -106,15 +115,28 @@ export function FloatingNavbar() {
 					</div>
 
 					<div className="flex items-center gap-3">
-						<Link to="/login" className="hidden md:block">
-							<Button
-								variant={isScrolled ? 'default' : 'outline'}
-								size={isScrolled ? 'sm' : 'default'}
-								className="transition-all duration-300"
-							>
-								Sign In
-							</Button>
-						</Link>
+						{isAuthenticated ? (
+							<Link to={dashboardPath} className="hidden md:block">
+								<Button
+									variant={isScrolled ? 'default' : 'outline'}
+									size={isScrolled ? 'sm' : 'default'}
+									className="gap-2 transition-all duration-300"
+								>
+									<LayoutDashboardIcon className="h-4 w-4" />
+									Dashboard
+								</Button>
+							</Link>
+						) : (
+							<Link to="/login" className="hidden md:block">
+								<Button
+									variant={isScrolled ? 'default' : 'outline'}
+									size={isScrolled ? 'sm' : 'default'}
+									className="transition-all duration-300"
+								>
+									Sign In
+								</Button>
+							</Link>
+						)}
 
 						<Button
 							variant="ghost"
@@ -160,9 +182,21 @@ export function FloatingNavbar() {
 									</Link>
 								);
 							})}
-							<Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-								<Button className="mt-2 w-full">Sign In</Button>
-							</Link>
+							{isAuthenticated ? (
+								<Link
+									to={dashboardPath}
+									onClick={() => setMobileMenuOpen(false)}
+								>
+									<Button className="mt-2 w-full gap-2">
+										<LayoutDashboardIcon className="h-4 w-4" />
+										Dashboard
+									</Button>
+								</Link>
+							) : (
+								<Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+									<Button className="mt-2 w-full">Sign In</Button>
+								</Link>
+							)}
 						</div>
 					</div>
 				</motion.div>

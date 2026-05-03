@@ -1,5 +1,6 @@
+import { Loader2Icon, LockIcon, MailIcon } from 'lucide-react';
+import { useLoginForm } from '@/features/auth/hooks/use-login-form';
 import { Button } from '@/shadcn/button';
-import { Input } from '@/shadcn/input';
 import {
 	Card,
 	CardContent,
@@ -8,8 +9,7 @@ import {
 	CardTitle,
 } from '@/shadcn/card';
 import { Field, FieldLabel } from '@/shadcn/field';
-import { useLoginForm } from '@/features/auth/hooks/use-login-form';
-import { MailIcon, LockIcon, Loader2Icon } from 'lucide-react';
+import { Input } from '@/shadcn/input';
 
 export function LoginForm() {
 	const { isLoading, error, handleSubmit } = useLoginForm();
