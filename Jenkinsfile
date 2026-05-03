@@ -55,21 +55,19 @@ pipeline {
                         docker rm ${DB_NAME} || true
 
                         docker run -d \
-                          --name ${DB_NAME} \
-                          -e POSTGRES_USER=goreserve \
-                          -e POSTGRES_PASSWORD=goreserve \
-                          -e POSTGRES_DB=go_reserve \
-                          -p 5432:5432 \
-                          postgres:15
+                            --name ${DB_NAME} \
+                            --env-file /home/deploy/.env \
+                            -p 5432:5432 \
+                            postgres:15
 
                         sleep 5
 
                         docker run -d \
-                          --name ${APP_NAME} \
-                          --link ${DB_NAME}:db \
-                          -e DATABASE_URL=postgresql://goreserve:goreserve@db:5432/go_reserve \
-                          -p ${APP_PORT}:3000 \
-                          ${IMAGE_NAME}:${IMAGE_TAG}
+                            --name ${APP_NAME} \
+                            --link ${DB_NAME}:db \
+                            --env-file /home/deploy/.env \
+                            -p ${APP_PORT}:3000 \
+                            ${IMAGE_NAME}:${IMAGE_TAG}
 
                         sleep 5
 

@@ -4,9 +4,9 @@ services:
     container_name: kelompok1_db
     restart: always
     environment:
-      POSTGRES_USER: goreserve
-      POSTGRES_PASSWORD: goreserve
-      POSTGRES_DB: go_reserve
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -20,7 +20,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://goreserve:goreserve@db:5432/go_reserve
+      DATABASE_URL: ${DATABASE_URL}
     command: sh -c "bunx prisma migrate deploy && bun run db:seed && bun run dev --host"
     # ⚠️ remove volume for now (important!)
     # volumes:
