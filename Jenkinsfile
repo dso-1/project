@@ -46,33 +46,22 @@ pipeline {
                 sshagent(['vm-kelompok1-ssh']) {
                     sh """
                     ssh -o StrictHostKeyChecking=no deploy@${VM_HOST} '
-                        
                         docker load < /tmp/image.tar.gz
 
                         docker stop ${APP_NAME} || true
                         docker rm ${APP_NAME} || true
-                        docker stop ${DB_NAME} || true
-                        docker rm ${DB_NAME} || true
-
-                        docker run -d \
-                            --name ${DB_NAME} \
-                            --env-file /home/deploy/.env \
-                            -p 5432:5432 \
-                            postgres:15
-
-                        sleep 5
 
                         docker run -d \
                             --name ${APP_NAME} \
-                            --link ${DB_NAME}:db \
                             --env-file /home/deploy/.env \
+                            --restart unless-stopped \
                             -p ${APP_PORT}:3000 \
                             ${IMAGE_NAME}:${IMAGE_TAG}
 
-                        sleep 5
+                        sleep 10
 
-                        docker exec ${APP_NAME} bunx prisma db push
-                        docker exec ${APP_NAME} bun run db:seed
+                        docker exec ${APP_NAME} bunx prisma db push || exit 1
+                        docker exec ${APP_NAME} bun run db:seed || exit 1
                     '
                     """
                 }
