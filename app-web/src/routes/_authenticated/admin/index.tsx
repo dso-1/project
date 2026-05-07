@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useQueries } from '@tanstack/react-query';
 import {
 	getDashboardStatsFn,
@@ -8,8 +8,25 @@ import { AdminDashboardPage } from '@/features/dashboard/components/admin-dashbo
 import { getRoomStatsFn } from '@/features/rooms/api/rooms.api';
 import { Card, CardContent, CardHeader } from '@/shadcn/card';
 import { PageErrorFallback } from '@/shared/components/page-error-fallback';
+import { getSessionFn } from '@/features/auth/api/auth.server';
 
 export const Route = createFileRoute('/_authenticated/admin/')({
+	beforeLoad: async () => {
+		try {
+			const session = await getSessionFn();
+			if (!session.isValid) {
+				throw redirect({ to: '/login' });
+			}
+			if (session.user?.role !== 'ADMIN') {
+				throw redirect({ to: '/student' });
+			}
+		} catch (e) {
+			if (e instanceof Response || (e as { _isRedirect?: boolean })?._isRedirect) {
+				throw e;
+			}
+			throw redirect({ to: '/login' });
+		}
+	},
 	component: AdminDashboardRoute,
 });
 

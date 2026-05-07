@@ -1,6 +1,7 @@
 import { createServerFn } from '@tanstack/react-start';
 import { compare, hash } from 'bcryptjs';
 import { prisma } from '@/shared/lib/prisma';
+import { saveSession, clearSession, getSession } from '@/shared/lib/session';
 
 interface LoginResult {
 	success: boolean;
@@ -38,19 +39,42 @@ export const loginFn = createServerFn({ method: 'POST' })
 			};
 		}
 
+		const userData = {
+			id: user.id,
+			email: user.email,
+			name: user.name,
+			role: user.role,
+		};
+
+		await saveSession({ user: userData, isLoggedIn: true });
+
 		return {
 			success: true,
-			user: {
-				id: user.id,
-				email: user.email,
-				name: user.name,
-				role: user.role,
-			},
+			user: userData,
 		};
 	});
 
 export const logoutFn = createServerFn({ method: 'POST' }).handler(async () => {
+	await clearSession();
 	return { success: true };
+});
+
+export const getSessionFn = createServerFn({ method: 'GET' }).handler(async () => {
+	const session = await getSession();
+	if (!session || !session.isLoggedIn || !session.user) {
+		return { isValid: false, user: null };
+	}
+
+	const user = await prisma.user.findUnique({
+		where: { id: session.user.id },
+		select: { id: true, email: true, name: true, role: true },
+	});
+
+	if (!user) {
+		return { isValid: false, user: null };
+	}
+
+	return { isValid: true, user };
 });
 
 export const validateUserFn = createServerFn({ method: 'POST' })
@@ -110,13 +134,17 @@ export const registerFn = createServerFn({ method: 'POST' })
 			},
 		});
 
+		const userData = {
+			id: user.id,
+			email: user.email,
+			name: user.name,
+			role: user.role,
+		};
+
+		await saveSession({ user: userData, isLoggedIn: true });
+
 		return {
 			success: true,
-			user: {
-				id: user.id,
-				email: user.email,
-				name: user.name,
-				role: user.role,
-			},
+			user: userData,
 		};
 	});

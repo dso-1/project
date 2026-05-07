@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import * as React from 'react';
-import { logoutFn, validateUserFn } from '@/features/auth/api/auth.server';
+import { logoutFn, getSessionFn } from '@/features/auth/api/auth.server';
 
 interface User {
 	id: string;
@@ -27,34 +27,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 	const refreshUser = React.useCallback(async () => {
 		try {
-			const storedUser = localStorage.getItem('user');
-			if (storedUser) {
-				const parsedUser = JSON.parse(storedUser) as User;
+			const result = await getSessionFn();
 
-				const result = await validateUserFn({ data: parsedUser.id });
-
-				if (result.isValid && result.user) {
-					setUser(result.user);
-					localStorage.setItem('user', JSON.stringify(result.user));
-				} else {
-					setUser(null);
-					localStorage.removeItem('user');
-				}
+			if (result.isValid && result.user) {
+				setUser(result.user);
 			} else {
 				setUser(null);
 			}
 		} catch (err) {
 			console.error('Error refreshing user:', err);
-
-			const storedUser = localStorage.getItem('user');
-			if (storedUser) {
-				try {
-					setUser(JSON.parse(storedUser));
-				} catch {
-					localStorage.removeItem('user');
-					setUser(null);
-				}
-			}
+			setUser(null);
 		} finally {
 			setIsLoading(false);
 		}
@@ -66,7 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 	const login = React.useCallback((userData: User) => {
 		setUser(userData);
-		localStorage.setItem('user', JSON.stringify(userData));
 	}, []);
 
 	const logout = React.useCallback(async () => {
@@ -76,7 +57,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			console.error('Logout error:', err);
 		} finally {
 			setUser(null);
-			localStorage.removeItem('user');
 			navigate({ to: '/login' });
 		}
 	}, [navigate]);

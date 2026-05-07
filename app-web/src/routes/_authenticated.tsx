@@ -1,23 +1,21 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 import { DashboardLayout } from '@/features/dashboard/components/dashboard-layout';
+import { getSessionFn } from '@/features/auth/api/auth.server';
 
 export const Route = createFileRoute('/_authenticated')({
 	beforeLoad: async () => {
-		if (typeof window !== 'undefined') {
-			const storedUser = localStorage.getItem('user');
-			if (!storedUser) {
+		try {
+			const session = await getSessionFn();
+			if (!session.isValid) {
 				throw redirect({ to: '/login' });
 			}
-			try {
-				const user = JSON.parse(storedUser);
-				return { user };
-			} catch {
-				localStorage.removeItem('user');
-				throw redirect({ to: '/login' });
+			return { user: session.user };
+		} catch (e) {
+			if (e instanceof Response || (e as { _isRedirect?: boolean })?._isRedirect) {
+				throw e;
 			}
+			throw redirect({ to: '/login' });
 		}
-
-		return { user: null };
 	},
 	component: AuthenticatedLayout,
 });

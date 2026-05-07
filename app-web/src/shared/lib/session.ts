@@ -1,4 +1,9 @@
-import { getIronSession, type SessionOptions } from 'iron-session';
+import { sealData, unsealData } from 'iron-session';
+import {
+	getCookie,
+	setCookie,
+	deleteCookie,
+} from '@tanstack/react-start/server';
 
 export interface SessionData {
 	user?: {
@@ -14,7 +19,7 @@ export const defaultSession: SessionData = {
 	isLoggedIn: false,
 };
 
-export const sessionOptions: SessionOptions = {
+export const sessionOptions = {
 	password:
 		process.env.SESSION_SECRET ||
 		'complex_password_at_least_32_characters_long_for_iron_session',
@@ -28,14 +33,27 @@ export const sessionOptions: SessionOptions = {
 	},
 };
 
-export async function getSessionFromRequest(
-	request: Request,
-	response: Response,
-) {
-	const session = await getIronSession<SessionData>(
-		request,
-		response,
-		sessionOptions,
-	);
-	return session;
+export async function getSession(): Promise<SessionData | null> {
+	const cookie = getCookie(sessionOptions.cookieName);
+	if (!cookie) return null;
+	try {
+		return await unsealData<SessionData>(cookie, {
+			password: sessionOptions.password,
+		});
+	} catch {
+		return null;
+	}
+}
+
+export async function saveSession(data: SessionData) {
+	const sealed = await sealData(data, {
+		password: sessionOptions.password,
+	});
+	setCookie(sessionOptions.cookieName, sealed, sessionOptions.cookieOptions);
+}
+
+export async function clearSession() {
+	deleteCookie(sessionOptions.cookieName, {
+		path: '/',
+	});
 }

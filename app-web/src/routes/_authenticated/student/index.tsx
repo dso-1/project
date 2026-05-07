@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useQueries } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth/hooks/use-auth';
 import { StudentDashboardPage } from '@/features/dashboard/components/student-dashboard-page';
@@ -8,8 +8,25 @@ import {
 } from '@/features/reservations/api/reservations.api';
 import { Card, CardContent, CardHeader } from '@/shadcn/card';
 import { PageErrorFallback } from '@/shared/components/page-error-fallback';
+import { getSessionFn } from '@/features/auth/api/auth.server';
 
 export const Route = createFileRoute('/_authenticated/student/')({
+	beforeLoad: async () => {
+		try {
+			const session = await getSessionFn();
+			if (!session.isValid) {
+				throw redirect({ to: '/login' });
+			}
+			if (session.user?.role !== 'MAHASISWA') {
+				throw redirect({ to: '/admin' });
+			}
+		} catch (e) {
+			if (e instanceof Response || (e as { _isRedirect?: boolean })?._isRedirect) {
+				throw e;
+			}
+			throw redirect({ to: '/login' });
+		}
+	},
 	component: StudentDashboardRoute,
 });
 
