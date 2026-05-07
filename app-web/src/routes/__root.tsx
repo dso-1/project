@@ -1,5 +1,6 @@
 import { TanStackDevtools } from '@tanstack/react-devtools';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import {
 	createRootRoute,
 	HeadContent,
@@ -50,41 +51,46 @@ import { SmoothScroll } from '@/shared/components/smooth-scroll';
 import { Toaster } from '@/shared/components/ui/shadcn/sonner';
 
 function RootComponent() {
-	const queryClient = getQueryClient();
 	return (
-		<QueryClientProvider client={queryClient}>
-			<AuthProvider>
-				<SmoothScroll />
-				<Toaster richColors={true} />
-				<Outlet />
-			</AuthProvider>
-		</QueryClientProvider>
+		<AuthProvider>
+			<SmoothScroll />
+			<Toaster richColors={true} />
+			<Outlet />
+		</AuthProvider>
 	);
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+	const queryClient = getQueryClient();
+
 	return (
 		<html lang="en">
 			<head>
 				<HeadContent />
 			</head>
 			<body className="min-h-screen bg-background antialiased">
-				{children}
-				<ScrollRestoration />
-				{process.env.NODE_ENV === 'development' && (
-					<TanStackDevtools
-						config={{
-							position: 'bottom-right',
-						}}
-						plugins={[
-							{
-								name: 'Tanstack Router',
-								render: <TanStackRouterDevtoolsPanel />,
-							},
-						]}
-					/>
-				)}
-				<Scripts />
+				<QueryClientProvider client={queryClient}>
+					{children}
+					<ScrollRestoration />
+					{process.env.NODE_ENV === 'development' && (
+						<TanStackDevtools
+							config={{
+								position: 'bottom-right',
+							}}
+							plugins={[
+								{
+									name: 'Tanstack Query',
+									render: <ReactQueryDevtoolsPanel />,
+								},
+								{
+									name: 'Tanstack Router',
+									render: <TanStackRouterDevtoolsPanel />,
+								},
+							]}
+						/>
+					)}
+					<Scripts />
+				</QueryClientProvider>
 			</body>
 		</html>
 	);
